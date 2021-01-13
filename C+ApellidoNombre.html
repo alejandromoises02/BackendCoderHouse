@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+
+
+
+
+
+
+
+<script>
+class Persona {
+    constructor(nombre, apellido, libros, mascotas){
+    this.nombre = nombre
+    this.apellido = apellido
+    this.libros = libros
+    this.mascotas = mascotas
+    }
+
+    getFullName() {
+        console.log(this.nombre+" "+this.apellido);
+    }
+
+    addMascota(newMascota){
+        this.mascotas.push(newMascota);
+    }
+
+    getMascota(){
+        console.log(this.mascotas.length);
+    }
+
+    addBoook(newBook,newAutor){
+        this.libros.push({autor : newAutor, book : newBook})
+    }
+
+    getBooks(){
+        this.libros.forEach(i => {
+            console.log(i.book);
+        });
+    }
+
+
+}
+
+var ale = new Persona("ale", "fer", [{autor:"juan",book:"libro1"},{autor:"pedro",book:"libro2"}], ["perro", "gato"]);
+ale.getFullName();
+ale.getMascota();
+ale.addMascota("serpiente");
+ale.getMascota();
+ale.getBooks();
+ale.addBoook("libro3","luis")
+ale.getBooks();
+</script>
+
+</body>
+</html>

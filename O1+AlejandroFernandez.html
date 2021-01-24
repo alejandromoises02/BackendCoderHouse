@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input id="input">
+    <spam id="textoEspejo"></spam>
+
+<script type = "module">
+import {fromEvent} from "https://dev.jspm.io/rxjs@6/_esm2015";
+import {map} from "https://dev.jspm.io/rxjs@6/_esm2015/operators";
+const input = document.getElementById("input");
+const textoEspejado = document.getElementById("textoEspejo");
+const observable = fromEvent(input, "keyup");
+
+let espejado ="";
+
+const suscripcion = observable.subscribe( event => {
+    if( event.key === "Backspace") espejado = espejado.slice(0, -1);
+    else espejado += event.key;
+
+    if(espejado === "error") suscripcion.error("Error ingresado");
+    if(espejado === "complete") suscripcion.complete();
+
+
+    textoEspejo.textContent = espejado.split("").reverse().join("");
+    setTimeout(() => {
+        suscripcion.unsubscribe();
+        cerrar();
+    }, 30000)
+}, error => {
+    console.log(error)
+    cerrar();
+}, () => {console.log("Complete ingresado");
+            cerrar();
+        }
+
+)
+
+const cerrar = () => {
+    espejado = "";
+    input.value = "";
+    input.disabled = true;
+    textoEspejado.textContent = "";
+}
+</script>
+
+</body>
+</html>

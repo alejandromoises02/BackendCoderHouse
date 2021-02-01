@@ -1,49 +1,61 @@
 const fs = require ('fs');
 
-let arrProductos;
-
-    const EscribirArchivo = () => {
-        
-            fs.promises.writeFile("./Archivo.txt", "utf-8")
-            
-        
-       
-    }
-
-    const leerArchivo = async () => {
+class Archivo {
+    constructor (nombre) {
+        this.nombre = "./"+nombre+".txt"
+      }
+    
+ 
+    async leerArchivo() {
         try{
-            const productos = await fs.promises.readFile("./Archivo.txt", "utf-8")
-            //console.log(productos);
-            arrProductos = JSON.parse(productos);    
-            console.log(arrProductos);
-            //mostrar array de productos
-            //retornar array
+            const productos = await fs.promises.readFile(this.nombre, "utf-8")
+            return JSON.parse(productos);
+             
         }
         catch (error){
-            console.log("No existe");
-            //mostrar array vacio
+            return [];
         }
     }
 
-    async function guardarArchivo(nombre, precio, urlFoto) {
+    async guardar(titulo, precio, urlFoto) {
+        const getID = async () =>{
+            const file = await this.leerArchivo();
+            const id =file.length + 1;
+            return id;
+        }
+        const nuevoProducto ={
+            id:await getID(),
+            title:titulo,
+            price:precio,
+            thumbnail:urlFoto
+        }
+
+       
+        let lista = await this.leerArchivo();
+        lista.push(nuevoProducto)
+        
         try{
-            //leer longitud de productos
-            //crear producto con id
-            await fs.promises.appendFile("./Archivo.txt", "ACA VA EL NUEVO PRODUCTO")
+            const aux = await fs.promises.writeFile(this.nombre, JSON.stringify(lista))
         }
         catch(error){
             console.log("No se pudo escribir en el archivo");
         }
     }
         
-    function borrarArchivo(){
+    borrar(){
         try{
-            fs.unlink("./Archivo.txt");
+            fs.unlinkSync(this.nombre);
         }
         catch(error){
-            console.log("No se pudo borrar");
+            console.log(error);
         }
     }
 
-    leerArchivo()
+    async leer (){console.log(await this.leerArchivo()); }
+
+
+}
+    
+
+
 

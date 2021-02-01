@@ -1,20 +1,49 @@
-var http = require("http");
-var server = http.createServer((req , res)=>{
-    let id = Math.random() * (10 - 1) + 1;
-    let title = "Producto " + Math.random() * (10 - 1) + 1;
-    let price = Math.random() * (9999.99 - 0.00) + 0.00;
-    let thumbnail = "Foto " + Math.random() * (10 - 1) + 1;
-    let objeto = {
-        id : id,
-        title: title,
-        price: price,
-        thumbnail: thumbnail
+const fs = require ('fs');
+
+let arrProductos;
+
+    const EscribirArchivo = () => {
+        
+            fs.promises.writeFile("./Archivo.txt", "utf-8")
+            
+        
+       
     }
-    res.end(JSON.stringify(objeto))
-})
 
-const PORT = process.env.PORT || 30000
+    const leerArchivo = async () => {
+        try{
+            const productos = await fs.promises.readFile("./Archivo.txt", "utf-8")
+            //console.log(productos);
+            arrProductos = JSON.parse(productos);    
+            console.log(arrProductos);
+            //mostrar array de productos
+            //retornar array
+        }
+        catch (error){
+            console.log("No existe");
+            //mostrar array vacio
+        }
+    }
 
-server.listen(PORT, ()=>{
-    console.log("Servidor Http escuchando en el puerto ${PORT}");
-})
+    async function guardarArchivo(nombre, precio, urlFoto) {
+        try{
+            //leer longitud de productos
+            //crear producto con id
+            await fs.promises.appendFile("./Archivo.txt", "ACA VA EL NUEVO PRODUCTO")
+        }
+        catch(error){
+            console.log("No se pudo escribir en el archivo");
+        }
+    }
+        
+    function borrarArchivo(){
+        try{
+            fs.unlink("./Archivo.txt");
+        }
+        catch(error){
+            console.log("No se pudo borrar");
+        }
+    }
+
+    leerArchivo()
+

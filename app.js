@@ -121,5 +121,5 @@ app.get("/visitas", (req, res) => {
 });
 
 app.listen(puerto, () => {
-  console.log("Servidor esuchando puerto 8080");
+  console.log(`Servidor esuchando puerto ${puerto}`);
 });

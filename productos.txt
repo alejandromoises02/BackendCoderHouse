@@ -1,0 +1,1 @@
+[{"id":1,"title":"leche","price":200,"thumbnail":"leche.png"},{"id":2,"title":"azucar","price":100,"thumbnail":"azucar.png"},{"id":3,"title":"limones","price":300,"thumbnail":"limones.png"},{"id":4,"title":"libros","price":500,"thumbnail":"libros.png"}]

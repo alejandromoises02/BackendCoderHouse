@@ -46,6 +46,7 @@ class Archivo {
     } catch (error) {
       console.log("No se pudo escribir en el archivo");
     }
+    return nuevoProducto
   }
 
   borrar() {
@@ -65,9 +66,7 @@ app.get("/", (req, res) => {
   res.send("Principal");
 });
 
-app.get("/items", (req, res) => {
-  contItems++;
-
+app.get("/api/productos", (req, res) => {
   async function getProductos() {
     const productos = await miArchivo.leer();
     const resp = {
@@ -81,42 +80,37 @@ app.get("/items", (req, res) => {
       res.send(productos);
     })
     .catch(function (err) {
-      console.log(err);
+      res.send({error: "no hay productos cargados"});
+      res.sendStatus(404);
     });
 });
 
-app.get("/item-random", (req, res) => {
-  contItem++;
-
-  let resp;
-
-  async function getProductoRandom() {
-    productos = await miArchivo.leer();
-    cantidad = productos.length - 1;
-    return productos[Math.floor(Math.random() * (cantidad - 0)) + 0];
+app.get("/api/productos/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  async function getProductos() {
+    const productos = await miArchivo.leer();
+    return productos;
   }
-
-  getProductoRandom()
-    .then((prod) => {
-      resp = {
-        item: prod,
-      };
-      res.send(resp);
-    })
-    .catch(function (err) {
-      console.log(err);
+  try {
+    getProductos().then((productos) => {
+      productos.map((element) =>
+        element.id === id ? res.send(element) : null
+      );
     });
+  } catch (error) {
+    res.send({error: "producto no encontrado"});
+    res.sendStatus(404);
+  }
 });
 
-app.get("/visitas", (req, res) => {
+app.post("/api/productos", (req, res) => {
   try {
-    const visitas = {
-      items: contItems,
-      item: contItem,
-    };
-    res.send(visitas);
-  } catch (err) {
-    console.log(err);
+    const { title, price, thumbnail } = req.body;
+    miArchivo.guardar(title, price, thumbnail)
+    .then((resp)=>res.send(resp))
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
   }
 });
 

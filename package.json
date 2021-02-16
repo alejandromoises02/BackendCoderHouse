@@ -19,6 +19,7 @@
   "homepage": "https://github.com/alejandromoises02/BackendCoderHouse#readme",
   "dependencies": {
     "express": "^4.17.1",
+    "express-handlebars": "^5.2.0",
     "moment": "^2.29.1"
   },
   "devDependencies": {

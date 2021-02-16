@@ -3,9 +3,9 @@ const app = express();
 const router = express.Router()
 app.use(express.json());
 const fs = require("fs");
+let handlebars = require('express-handlebars');
+const { dirname } = require("path");
 const puerto = 8080;
-let contItems = 0;
-let contItem = 0;
 
 //Manejo de archivos
 
@@ -70,7 +70,34 @@ router.get("/", (req, res) => {
   res.send("Principal");
 });
 
+app.engine(
+  "hbs",
+  handlebars({
+    extname: ".hbs",
+    defaultLayout: "index.hbs",
+    layoutsDir: __dirname + "/views/layouts",
+    partialsDir: __dirname + "/views/partials"
+    })
+)
 
+app.set("view engine","hbs")
+app.set("views","./views")
+app.use(express.static("public"))
+
+app.get("/productos/vistas", (req, res) => {
+  async function getProductos() {
+    const productos = await miArchivo.leer();
+    return productos;
+  }
+  getProductos()
+    .then((productos) => {
+      res.render("main",{productos: productos, listExists: true});
+    })
+    .catch(function (err) {
+      res.send({error: "no hay productos"});
+      res.sendStatus(404);
+    });
+});
 
 router.get("/productos", (req, res) => {
   async function getProductos() {

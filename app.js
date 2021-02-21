@@ -1,6 +1,7 @@
-const express = require("express");
-const app = express();
-const router = express.Router()
+//const express = require("express");
+//const app = express();
+const app = require('express')()
+const http = require('http').createServer(app);
 app.use(express.json());
 const fs = require("fs");
 let handlebars = require('express-handlebars');
@@ -207,7 +208,9 @@ app.use("/api", router)
 
 
 
-app.listen(puerto, () => {
+/*app.listen(puerto, () => {
   console.log(`Servidor esuchando puerto ${puerto}`);
-});
+});*/
 //Server
+
+http.listen()

@@ -3,7 +3,52 @@ const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 var moment = require('moment'); // require
 moment().format(); 
+const fs = require("fs");
 const puerto = 8080;
+
+//Manejo de archivos
+
+class Archivo {
+  constructor(nombre) {
+    this.nombre = "./" + nombre + ".txt";
+  }
+
+  async leer() {
+    try {
+      const chat = await fs.promises.readFile(this.nombre, "utf-8");
+      return JSON.parse(chat);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  async guardar(mensaje) {
+    
+    const nuevoMensaje = {
+      msg: mensaje
+    };
+
+    let lista = await this.leer();
+    lista.push(nuevoMensaje);
+
+    try {
+      const aux = await fs.promises.writeFile(
+        this.nombre,
+        JSON.stringify(lista)
+      );
+    } catch (error) {
+      console.log("No se pudo escribir en el archivo");
+    }
+    return nuevoMensaje
+  }
+
+  
+}
+
+const miArchivo = new Archivo("productos");
+//Manejo de archivos
+
+
 
 let users = [];
 
@@ -66,6 +111,7 @@ io.on("connection", (socket) => {
       msg: payload.msg,
       date: moment().format('L')
     });
+    miArchivo.guardar(`Mensaje de ${payload.mail} en Fecha ${payload.msg}: ${payload.msg}`)
     
   });
 

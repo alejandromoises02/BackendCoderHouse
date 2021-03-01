@@ -1,59 +1,81 @@
-const express = require("express");
-const app = require('express')()
-const http = require('http').createServer(app);
-const io = require('socket.io')(http)
-app.use(express.json());
-const { dirname } = require("path");
+const app = require("express")();
+const http = require("http").createServer(app);
+const io = require("socket.io")(http);
+var moment = require('moment'); // require
+moment().format(); 
 const puerto = 8080;
+
+let users = [];
 
 let productos = [
   {
-    id:1,
-    title:"leche",
-    price:200,
-    thumbnail:"leche.png"},
-    {
-      id:2,
-      title:"azucar",
-      price:100,
-      thumbnail:"azucar.png"
-    },
-    {
-      id:3,
-      title:"azucar",
-      price:100,
-      thumbnail:"azucar.png"
-    }
-    ,
-    {
-      id:4,
-      title:"azucar",
-      price:100,
-      thumbnail:"azucar.png"
-    },
-    {
-      id:5,
-      title:"azucar",
-      price:100,
-      thumbnail:"azucar.png"
-    }
-  ]
+    id: 1,
+    title: "leche",
+    price: 200,
+    thumbnail: "leche.png",
+  },
+  {
+    id: 2,
+    title: "azucar",
+    price: 100,
+    thumbnail: "azucar.png",
+  },
+  {
+    id: 3,
+    title: "azucar",
+    price: 100,
+    thumbnail: "azucar.png",
+  },
+  {
+    id: 4,
+    title: "azucar",
+    price: 100,
+    thumbnail: "azucar.png",
+  },
+  {
+    id: 5,
+    title: "azucar",
+    price: 100,
+    thumbnail: "azucar.png",
+  },
+];
 
-
-app.get('/', (req, res)=>{
-  res.sendFile(__dirname+'/index.html')
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/index.html");
 });
 
-io.on('connection', (socket)=>{
-  console.log('se conecto un usuario');
-  socket.emit('mensaje', productos)
-})
+io.on("connection", (socket) => {
+  console.log(`se conecto el usuario ${socket.id}`);
 
-io.on('disconnect', (socket)=>{
-  console.log('se desconecto');
-})
+  socket.join(socket.id)
+  socket.on("session", (payload) => {
+    console.log(payload);
+    if (!users.includes(payload.mail)) {
+      users.push(payload.mail);
+    }
+    io.to(socket.id).emit("userId", {
+      sessionId: payload.mail,
+      users,
+    });
+  });
+
+  socket.on("message", (payload) => {
+    console.log(payload);
+    io.emit("message", {
+      from: payload.mail,
+      msg: payload.msg,
+      date: moment().format('L')
+    });
+    
+  });
 
 
-http.listen(puerto, ()=>{
+});
+
+io.on("disconnect", (socket) => {
+  console.log("se desconecto");
+});
+
+http.listen(puerto, () => {
   console.log(`Servidor esuchando puerto ${puerto}`);
-})
+});

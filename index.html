@@ -7,54 +7,109 @@
     <title>Document</title>
   </head>
   <body>
-    <ul id="productos"></ul>
 
-    <form
-      action="../api/productos"
-      enctype="application/x-www-form-urlencoded"
-      method="POST"
-    >
-      <input type="text" name="title" placeholder="ingrese titulo" />
-      <input type="number" name="price" placeholder="ingrese precio" />
-      <input
-        type="text"
-        name="thumbnail"
-        placeholder="ingrese ruta de imagen"
-      />
-      <input type="submit" />
+    <form id="session" action="">
+      <input id="email" autocomplete="off" type="email" placeholder="Tu email" required>
+      <button type="submit">Conectarse</button>
+  </form>
+  <div id="chat">
+    <h1 id="title"></h1>
+    <form id="chat_msg">
+      <input id="mensaje" autocomplete="off" type="text" required>
+      
     </form>
+    <ul id=caja_de_mensajes></ul>
+  </div>
 
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
+
+
+
       const socket = io();
 
-      let prod = document.getElementById("productos");
+      let chat = document.getElementById("chat");
+      let chat_msg = document.getElementById("chat_msg");
+      let title = document.getElementById("title");
+      let mensaje = document.getElementById('mensaje')
+      let cajaDeMensajes = document.getElementById('caja_de_mensajes')
+      let mail =""
 
-      function borrarElemento() {
-        let borrarElemento = $("#productos li");
+      function borrarElemento(tag) {
+        let borrarElemento = $(tag);
         borrarElemento.remove();
       }
 
       
 
-      function crearElemento(contenido) {
+      /*function crearElemento(contenido) {
         let salida = document.createElement("li");
         salida.textContent = contenido;
         prod.appendChild(salida);
+      }*/
+
+      function crearChat() {
+        title.textContent = 'Bienvenido';
+
+        salida = document.createElement('button');
+        salida.textContent = 'Enviar';
+        chat_msg.appendChild(salida);
+
+        salida = document.createElement("ul");
+        chat.appendChild(salida);
+
       }
 
-      socket.on("mensaje", (productos) => {
-        console.log(productos);
-        borrarElemento();
-        productos.forEach((item) => {
-          crearElemento(item.id);
-          crearElemento(item.title);
-          crearElemento(item.price);
-          crearElemento(item.thumbnail);
-        });
+      function mostraMensaje(from, date, msg) {
+
+        salida = document.createElement('li');
+        salida.textContent = `Mensaje de ${from} en Fecha ${date}: ${msg}`;
+        cajaDeMensajes.appendChild(salida);
+      }
+
+      const form = document.getElementById('session')
+        const inputUserId = document.getElementById('email')
+
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault()
+            mail = inputUserId.value
+            socket.emit('session', {
+                mail
+            })
+            inputUserId.nodeValue = ''
+            crearChat()
+            borrarElemento("#session")
+        })
+
+        chat_msg.addEventListener('submit', (event) => {
+            event.preventDefault()
+            
+            socket.emit('message', {
+                mail,
+                msg: mensaje.value,
+            })
+            mensaje.value = ''
+        })
+
+
+        
+
+      socket.on("userId", (users) => {
+        console.log(users);
+        
       });
+
+      socket.on("message", (mensajes) => {
+        console.log(mensajes);
+        mostraMensaje(mensajes.from, mensajes.date, mensajes.msg)
+        
+      });
+
+
+
     </script>
   </body>
 </html>

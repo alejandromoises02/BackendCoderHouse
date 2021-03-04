@@ -86,7 +86,7 @@ let productos = [
   },
 ];
 
-app.get("/", (req, res) => {
+app.get("/", (req:any, res:any) => {
   res.sendFile(__dirname + "/index.html");
 });
 

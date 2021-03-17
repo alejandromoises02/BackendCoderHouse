@@ -5,85 +5,25 @@ var moment = require('moment'); // require
 moment().format(); 
 const fs = require("fs");
 const puerto = 8080;
+const {sqlite3Connect} = require('./DB/sqlite3.db')
+const knex = require('knex')(sqlite3Connect)
 
-//Manejo de archivos
 
-class Archivo {
-  constructor(nombre) {
-    this.nombre = "./" + nombre + ".txt";
-  }
+//creacion de tabla
 
-  async leer() {
-    try {
-      const chat = await fs.promises.readFile(this.nombre, "utf-8");
-      return JSON.parse(chat);
-    } catch (error) {
-      return [];
-    }
-  }
-
-  async guardar(mensaje) {
-    
-    const nuevoMensaje = {
-      msg: mensaje
-    };
-
-    let lista = await this.leer();
-    lista.push(nuevoMensaje);
-
-    try {
-      const aux = await fs.promises.writeFile(
-        this.nombre,
-        JSON.stringify(lista)
-      );
-    } catch (error) {
-      console.log("No se pudo escribir en el archivo");
-    }
-    return nuevoMensaje
-  }
-
-  
-}
-
-const miArchivo = new Archivo("productos");
-//Manejo de archivos
-
+/*knex.schema.createTable('chat', table =>{
+  table.string('from',50)
+  table.string('msg',100)
+  table.string('date',50)
+})
+.then(()=> console.log('creado'))
+.catch((err) => console.log(err))
+.finally(()=> knex.destroy())*/
 
 
 let users = [];
 
-let productos = [
-  {
-    id: 1,
-    title: "leche",
-    price: 200,
-    thumbnail: "leche.png",
-  },
-  {
-    id: 2,
-    title: "azucar",
-    price: 100,
-    thumbnail: "azucar.png",
-  },
-  {
-    id: 3,
-    title: "azucar",
-    price: 100,
-    thumbnail: "azucar.png",
-  },
-  {
-    id: 4,
-    title: "azucar",
-    price: 100,
-    thumbnail: "azucar.png",
-  },
-  {
-    id: 5,
-    title: "azucar",
-    price: 100,
-    thumbnail: "azucar.png",
-  },
-];
+
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
@@ -94,7 +34,6 @@ io.on("connection", (socket) => {
 
   socket.join(socket.id)
   socket.on("session", (payload) => {
-    console.log(payload);
     if (!users.includes(payload.mail)) {
       users.push(payload.mail);
     }
@@ -105,13 +44,16 @@ io.on("connection", (socket) => {
   });
 
   socket.on("message", (payload) => {
-    console.log(payload);
-    io.emit("message", {
+    let nuevoMensaje = {
       from: payload.mail,
       msg: payload.msg,
       date: moment().format('L')
-    });
-    miArchivo.guardar(`Mensaje de ${payload.mail} en Fecha ${payload.msg}: ${payload.msg}`)
+    }
+    io.emit("message", nuevoMensaje);
+    knex('chat').insert(nuevoMensaje)
+    .then(()=>console.log("mensaje guardado"))
+    .catch((err)=>console.log(err))
+    .finally(()=>knex.destroy())
     
   });
 

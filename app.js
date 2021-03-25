@@ -1,28 +1,12 @@
 const app = require("express")();
+const chatModel = require('./models/chat.mongoose');
+const mongoose = require('mongoose');
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
-var moment = require('moment'); // require
+var moment = require('moment'); 
 moment().format(); 
-const fs = require("fs");
 const puerto = 8080;
-const {sqlite3Connect} = require('./DB/sqlite3.db')
-const knex = require('knex')(sqlite3Connect)
-
-
-//creacion de tabla
-
-/*knex.schema.createTable('chat', table =>{
-  table.string('from',50)
-  table.string('msg',100)
-  table.string('date',50)
-})
-.then(()=> console.log('creado'))
-.catch((err) => console.log(err))
-.finally(()=> knex.destroy())*/
-
-
 let users = [];
-
 
 
 app.get("/", (req, res) => {
@@ -50,11 +34,8 @@ io.on("connection", (socket) => {
       date: moment().format('L')
     }
     io.emit("message", nuevoMensaje);
-    knex('chat').insert(nuevoMensaje)
-    .then(()=>console.log("mensaje guardado"))
-    .catch((err)=>console.log(err))
-    .finally(()=>knex.destroy())
-    
+    const chatSaved = new chatModel(nuevoMensaje)
+    chatSaved.save()
   });
 
 
@@ -64,6 +45,16 @@ io.on("disconnect", (socket) => {
   console.log("se desconecto");
 });
 
+
+
 http.listen(puerto, () => {
-  console.log(`Servidor esuchando puerto ${puerto}`);
-});
+  mongoose.connect('mongodb://localhost:27017/test-mongoose',
+      {
+          useNewUrlParser: true,
+          useUnifiedTopology: true
+      }
+  )
+      .then( () => console.log(`Servidor esuchando puerto ${puerto}`))
+      .catch( (err) => console.log(err));
+})
+

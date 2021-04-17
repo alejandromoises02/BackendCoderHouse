@@ -4,12 +4,18 @@
     <link rel="shortcut icon" href="#" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/normalizr@3.6.1/dist/normalizr.min.js"></script>
     <title>Document</title>
   </head>
   <body>
 
     <form id="session" action="">
       <input id="email" autocomplete="off" type="email" placeholder="Tu email" required>
+      <input id="nombre" autocomplete="off" type="text" placeholder="Tu Nombre" required>
+      <input id="apellido" autocomplete="off" type="text" placeholder="Tu Apellido" required>
+      <input id="edad" autocomplete="off" type="text" placeholder="Tu Edad" required>
+      <input id="alias" autocomplete="off" type="text" placeholder="Tu Alias" required>
+      <input id="avatar" autocomplete="off" type="text" placeholder="Tu Avatar" required>
       <button type="submit">Conectarse</button>
   </form>
   <div id="chat">
@@ -70,16 +76,31 @@
       }
 
       const form = document.getElementById('session')
-        const inputUserId = document.getElementById('email')
+      const inputUserId = document.getElementById('email')
+      const inputUserNombre = document.getElementById('nombre')
+      const inputUserApellido = document.getElementById('apellido')
+      const inputUserEdad = document.getElementById('edad')
+      const inputUserAlias = document.getElementById('alias')
+      const inputUserAvatar = document.getElementById('avatar')
 
 
         form.addEventListener('submit', (event) => {
             event.preventDefault()
             mail = inputUserId.value
+            nombre = inputUserNombre.value
+            apellido = inputUserApellido.value
+            edad = inputUserEdad.value
+            alias = inputUserAlias.value
+            avatar = inputUserAvatar.value
             socket.emit('session', {
-                mail
+                mail,nombre,apellido,edad,alias,avatar
             })
             inputUserId.nodeValue = ''
+            inputUserNombre.nodeValue = ''
+            inputUserApellido.nodeValue = ''
+            inputUserEdad.nodeValue = ''
+            inputUserAlias.nodeValue = ''
+            inputUserAvatar.nodeValue = ''
             crearChat()
             borrarElemento("#session")
         })
@@ -88,8 +109,8 @@
             event.preventDefault()
             
             socket.emit('message', {
-                mail,
-                msg: mensaje.value,
+              mail,nombre,apellido,edad,alias,avatar,
+              msg: mensaje.value,
             })
             mensaje.value = ''
         })
@@ -104,7 +125,7 @@
 
       socket.on("message", (mensajes) => {
         console.log(mensajes);
-        mostraMensaje(mensajes.from, mensajes.date, mensajes.msg)
+        //mostraMensaje(mensajes.from, mensajes.date, mensajes.msg)
         
       });
 

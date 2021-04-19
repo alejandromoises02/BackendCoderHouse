@@ -1,79 +1,105 @@
 const app = require("express")();
-const chatModel = require("./models/chat.mongoose");
-const mongoose = require("mongoose");
+const chatModel = require('./models/chat.mongoose');
+const mongoose = require('mongoose');
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
-var moment = require("moment");
-const { schema, normalize } = require("normalizr");
-moment().format();
+var moment = require('moment'); 
+const cookieParser = require('cookie-parser')
+const session = require('express-session')
+
+moment().format(); 
 const puerto = 8080;
 let users = [];
+app.use(cookieParser())
+app.use(session({
+  secret: 'secret',
+  resave: true,
+  saveUninitialized: true
+}))
 
-const author = new schema.Entity("author")
-const msg = new schema.Entity("text")
-const date = new schema.Entity("date")
-const nuevoMsg = new schema.Entity("nuevoMensaje",{
-  author,
-  msg,
-  date
-},{idAttribute: "id"});
 
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
+  res.clearCookie("logoff")
+  if(!req.cookies.login){
+    res.sendFile(__dirname + "/index.html");
+  }
+  else if(req.cookies.login==="true"){
+    res.sendFile(__dirname + "/index.html");
+    res.cookie("login","true",{maxAge: 5000})
+  }
 });
+
+
+
+app.get("/login", (req, res) => {
+  if(!req.query.username || !req.query.password){
+    res.sendStatus(400);
+  }else if(req.query.username === "ale@gmail.com" && req.query.password === "12345"){
+    res.cookie("login","true",{maxAge: 5000})
+    res.sendFile(__dirname + "/chat.html");
+  }else{
+    res.sendStatus(400);
+  }
+})
+
+app.get("/clr", (req, res) => {
+  res.clearCookie("login")
+  res.cookie("logoff","true",{maxAge: 2000})
+  res.send("logoff")
+})
+
+/*app.get('/logout', (req, res) => {
+  req.session.destroy( err => {
+      if (!err){
+          res.send('Gracias')
+      }
+  })
+})*/
 
 io.on("connection", (socket) => {
   console.log(`se conecto el usuario ${socket.id}`);
 
-  socket.join(socket.id);
+  socket.join(socket.id)
   socket.on("session", (payload) => {
-    console.log(payload);
     if (!users.includes(payload)) {
-      //users.push(payload.mail);
-      users.push(payload); //nl
+      users.push(payload);
     }
     io.to(socket.id).emit("userId", {
-      sessionId: payload,
+      sessionId: payload.mail,
+      nombre: payload.nombre,
+      pass: payload.pass,
       users,
     });
   });
 
   socket.on("message", (payload) => {
     let nuevoMensaje = {
-      author: {
-        id: payload.mail,
-        nombre: payload.nombre,
-        apellido: payload.apellido,
-        edad: payload.edad,
-        alias: payload.alias,
-        avatar: payload.avatar,
-      },
-      text: payload.msg,
-      date: moment().format("L"),
-    };
-
-const normalizedMsg = normalize(nuevoMensaje, nuevoMsg)
-
-
-    io.emit("message", normalizedMsg);
-
-    console.log(normalizedMsg);
-
-    const chatSaved = new chatModel(nuevoMensaje);
-    chatSaved.save();
+      from: payload.mail,
+      nombre: payload.nombre,
+      msg: payload.msg,
+      date: moment().format('L')
+    }
+    io.emit("message", nuevoMensaje);
+    const chatSaved = new chatModel(nuevoMensaje)
+    chatSaved.save()
   });
+
+
 });
 
 io.on("disconnect", (socket) => {
   console.log("se desconecto");
 });
 
+
+
 http.listen(puerto, () => {
-  mongoose
-    .connect("mongodb://localhost:27017/test-mongoose", {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    })
-    .then(() => console.log(`Servidor esuchando puerto ${puerto}`))
-    .catch((err) => console.log(err));
-});
+  mongoose.connect('mongodb://localhost:27017/test-mongoose',
+      {
+          useNewUrlParser: true,
+          useUnifiedTopology: true
+      }
+  )
+      .then( () => console.log(`Servidor esuchando puerto ${puerto}`))
+      .catch( (err) => console.log(err));
+})

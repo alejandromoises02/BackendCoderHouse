@@ -6,12 +6,21 @@ const io = require("socket.io")(http);
 var moment = require('moment'); 
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
-
 moment().format(); 
 const puerto = 8080;
+const redis = require('redis')
+const client = redis.createClient()
+const RedisStore = require('connect-redis')(session)
 let users = [];
 app.use(cookieParser())
 app.use(session({
+
+  store: new RedisStore({
+    host:'localhost',
+    port: 6379,
+    client: client,
+    ttl: 600
+  }),
   secret: 'secret',
   resave: true,
   saveUninitialized: true
@@ -25,7 +34,7 @@ app.get("/", (req, res) => {
   }
   else if(req.cookies.login==="true"){
     res.sendFile(__dirname + "/index.html");
-    res.cookie("login","true",{maxAge: 5000})
+    res.cookie("login","true",{maxAge: 60000})
   }
 });
 
@@ -35,7 +44,7 @@ app.get("/login", (req, res) => {
   if(!req.query.username || !req.query.password){
     res.sendStatus(400);
   }else if(req.query.username === "ale@gmail.com" && req.query.password === "12345"){
-    res.cookie("login","true",{maxAge: 5000})
+    res.cookie("login","true",{maxAge: 60000})
     res.sendFile(__dirname + "/chat.html");
   }else{
     res.sendStatus(400);
@@ -48,13 +57,17 @@ app.get("/clr", (req, res) => {
   res.send("logoff")
 })
 
-/*app.get('/logout', (req, res) => {
-  req.session.destroy( err => {
-      if (!err){
-          res.send('Gracias')
-      }
-  })
-})*/
+app.get('/loggin-session', (req,res) =>{
+  if(!req.query.username || !req.query.password){
+    res.sendStatus(400);
+  }else if(req.query.username === "ale@gmail.com" && req.query.password === "12345"){
+    res.session.user = req.query.username;
+    res.session.admin = true;
+    res.send('login success')
+  }else{
+    res.sendStatus(400);
+  }
+})
 
 io.on("connection", (socket) => {
   console.log(`se conecto el usuario ${socket.id}`);
